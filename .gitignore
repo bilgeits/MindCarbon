@@ -1,0 +1,19 @@
+# Büyük ham veri: GitHub'a sığmaz (dosya başı 100 MB sınırı). Drive'dan paylaşın.
+data/porto/
+data/*.parquet
+data/taxi_zones.zip
+data/taxi_zones/
+
+# TomTom toplayıcı çıktıları ve anahtarlar (anahtar asla repoya girmesin)
+tomtom_toplayici/*.csv
+tomtom_toplayici/*.txt
+tomtom_toplayici/*.json
+.env
+*.key
+
+# Geçici / sistem
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

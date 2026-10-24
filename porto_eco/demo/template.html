@@ -1,0 +1,437 @@
+<title>GreenMatch Porto</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&display=swap">
+<style>
+/* Düzen: üstte rota gezgini (harita + kontrol), altında eşleştirme sonuçları, rota analizi ve yöntem. Manhattan demosuyla aynı tasarım dili. */
+:root {
+  --bg: #f3f5f4; --panel: #ffffff; --fg: #18211d; --muted: #56635d; --line: #d9dfdc; --soft: #eef2f0;
+  --water: #c9dbe6; --land0: #e9eee6; --land1: #b9c7b0; --edge: rgba(24,33,29,.10);
+  --fast: #2b3a34; --eco: #138a6e; --accent: #138a6e; --good: #1b7f4d; --warn: #9a5c00; --bad: #b23a2a;
+  --ev: #138a6e; --hev: #6b5bd2; --petrol: #c7791a; --diesel: #2f7fb5; --lpg: #a14a6a;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111614; --panel: #18201d; --fg: #e3ebe7; --muted: #9aa8a1; --line: #2a3531; --soft: #1f2925;
+  --water: #1c2c36; --land0: #1d2622; --land1: #3a4a40; --edge: rgba(227,235,231,.10);
+  --fast: #d7e2dc; --eco: #3fd0a8; --accent: #3fd0a8; --good: #4cc98a; --warn: #f0b040; --bad: #ff7a62;
+  --ev: #26a883; --hev: #8e7ff0; --petrol: #c27618; --diesel: #4a9ad8; --lpg: #d06890; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #111614; --panel: #18201d; --fg: #e3ebe7; --muted: #9aa8a1; --line: #2a3531; --soft: #1f2925;
+  --water: #1c2c36; --land0: #1d2622; --land1: #3a4a40; --edge: rgba(227,235,231,.10);
+  --fast: #d7e2dc; --eco: #3fd0a8; --accent: #3fd0a8; --good: #4cc98a; --warn: #f0b040; --bad: #ff7a62;
+  --ev: #26a883; --hev: #8e7ff0; --petrol: #c27618; --diesel: #4a9ad8; --lpg: #d06890; color-scheme: dark }
+
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 14px; line-height: 1.5; }
+.wrap { max-width: 1280px; margin: 0 auto; padding-block: 20px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 24px; }
+header { display: grid; gap: 6px; }
+h1 { font-family: var(--font-display); font-size: 30px; line-height: 1.1; margin: 0; letter-spacing: .01em; text-wrap: balance; }
+h2 { font-family: var(--font-display); font-size: 19px; margin: 0; letter-spacing: .02em; text-wrap: balance; }
+h3 { font-size: 13px; margin: 0; font-weight: 600; }
+.sub { color: var(--muted); margin: 0; max-width: 78ch; }
+.eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+section { display: grid; gap: 12px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.explorer { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+@media (max-width: 920px) { .explorer { grid-template-columns: minmax(0, 1fr); } }
+.mapbox { position: relative; width: 100%; max-width: 100%; aspect-ratio: 0.95; background: var(--water); border-radius: 4px; overflow: hidden; cursor: crosshair; }
+.mapbox canvas { width: 100%; height: 100%; display: block; }
+.maphint { position: absolute; left: 10px; top: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 4px 8px; font-size: 12px; color: var(--muted); pointer-events: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--muted); align-items: center; }
+.sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.ramp { display: inline-block; width: 70px; height: 8px; border-radius: 2px; vertical-align: middle; margin: 0 6px; background: linear-gradient(90deg, var(--land0), var(--land1)); }
+label.f { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+select, input[type=range] { width: 100%; font: inherit; color: var(--fg); }
+select { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; }
+input[type=range] { accent-color: var(--accent); }
+.row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.panel > *, .explorer > *, .two > * { min-width: 0; }
+select { min-width: 0; max-width: 100%; }
+.lam { font-family: var(--font-mono); font-size: 13px; color: var(--fg); }
+.cmp { display: grid; grid-template-columns: auto 1fr 1fr; gap: 4px 12px; font-variant-numeric: tabular-nums; align-items: baseline; }
+.cmp .h { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.cmp .k { color: var(--muted); font-size: 12px; }
+.cmp .v { font-family: var(--font-mono); font-size: 14px; }
+.chip { display: inline-block; font-family: var(--font-mono); font-size: 12px; padding: 1px 6px; border-radius: 10px; background: var(--soft); }
+.chip.good { color: var(--good); } .chip.warn { color: var(--warn); } .chip.bad { color: var(--bad); }
+.note { font-size: 12px; color: var(--muted); margin: 0; }
+.tablebox { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 13px; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+tr.hl td { background: var(--soft); font-weight: 600; }
+td.bar { min-width: 120px; }
+.mbar { height: 8px; border-radius: 0 2px 2px 0; display: inline-block; vertical-align: middle; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.kpi { display: grid; gap: 2px; }
+.kpi b { font-family: var(--font-mono); font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.kpi span { font-size: 12px; color: var(--muted); }
+.two { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 920px) { .two { grid-template-columns: minmax(0, 1fr); } }
+svg text { fill: var(--muted); font-family: var(--font-body); font-size: 11px; }
+svg .ax { stroke: var(--line); }
+.prose { max-width: 80ch; display: grid; gap: 10px; }
+.prose p, .prose li { margin: 0; }
+.prose ol, .prose ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.formula { font-family: var(--font-mono); font-size: 12.5px; background: var(--soft); border-radius: 4px; padding: 10px 12px; overflow-x: auto; white-space: pre; }
+a { color: var(--accent); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.seg button { font: inherit; font-size: 12px; background: var(--panel); color: var(--fg); border: 0; padding: 4px 10px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--panel); }
+button:focus-visible, select:focus-visible, input:focus-visible, .mapbox:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 4px 8px; font-size: 12px; white-space: nowrap; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">COMP 491 · GreenMatch · ara sunum, 13 Kasım 2026</span>
+    <h1>GreenMatch Porto: en az karbon + en kısa yol</h1>
+    <p class="sub">Porto'nun 1,7 milyon gerçek taksi yolculuğundan çıkarılan yol ağı, saatlik hızlar ve yükseklik verisi üzerinde; 15 gerçek araç modelinin resmi emisyon değerleriyle çalışan eko-rota ve eşleştirme algoritması. Haritada iki noktaya tıklayın ya da hazır bir yolculuk seçin.</p>
+  </header>
+
+  <section aria-labelledby="h-explorer">
+    <h2 id="h-explorer">Rota gezgini</h2>
+    <div class="explorer">
+      <div class="panel">
+        <div class="mapbox" id="mapbox" tabindex="0" aria-label="Porto haritası: başlangıç ve varış seçmek için tıklayın">
+          <canvas id="map"></canvas>
+          <div class="maphint" id="maphint">Başlangıç için tıklayın</div>
+          <div class="tip" id="maptip" hidden></div>
+        </div>
+        <div class="legend">
+          <span><span class="sw" style="background:var(--fast)"></span>En hızlı rota (λ = 0)</span>
+          <span><span class="sw" style="background:var(--eco);height:6px"></span>Eko-rota (seçilen λ)</span>
+          <span>Yükseklik 0 m<span class="ramp"></span>230 m</span>
+          <span><span class="sw" style="background:var(--water);height:8px"></span>Deniz</span>
+        </div>
+      </div>
+      <div class="panel" style="gap:14px">
+        <label class="f" for="preset">Hazır yolculuk
+          <select id="preset"></select>
+        </label>
+        <label class="f" for="model">Araç modeli
+          <select id="model"></select>
+        </label>
+        <div class="row2">
+          <label class="f" for="bucket">Saat dilimi
+            <select id="bucket"></select>
+          </label>
+          <label class="f" for="lambda">Emisyon ağırlığı λ: <span class="lam" id="lamv"></span>
+            <input type="range" id="lambda" min="0" max="30" step="1" value="6">
+          </label>
+        </div>
+        <p class="note">Maliyet = süre [dk] + λ × CO₂e [kg]. λ = 6 demek: 1 kg CO₂e tasarruf için en fazla 6 dakika daha uzun yol kabul edilir. Yolcu araçtayken hesaplanır.</p>
+        <div class="cmp" id="cmp" aria-live="polite"></div>
+        <div id="verdict"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Aynı yolculuk, 15 araç modeli (kuyudan tekerleğe g CO₂e)</h3>
+      <div class="tablebox"><table id="allmodels"></table></div>
+      <p class="note">Çubuk: en hızlı rotadaki emisyon. Eşleştirme algoritması bu farkı kullanıyor: aynı yolculuğu hangi aracın yaptığı, rotadan çok daha büyük fark yaratıyor.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-sim">
+    <h2 id="h-sim">Eşleştirme simülasyonu: 12 Mart 2014, Porto</h2>
+    <p class="sub" id="simsub"></p>
+    <div class="panel">
+      <div class="kpis" id="kpis"></div>
+    </div>
+    <div class="panel">
+      <h3>Algoritma karşılaştırması (3 farklı rastgele filo ataması, ortalama)</h3>
+      <div class="tablebox"><table id="algtable"></table></div>
+      <p class="note" id="algnote"></p>
+    </div>
+    <div class="two">
+      <div class="panel">
+        <h3>Emisyon ile bekleme dengesi: λ değiştikçe</h3>
+        <div id="pareto" style="position:relative"></div>
+        <div class="legend">
+          <span><span class="dot" style="background:var(--eco)"></span>GreenMatch (araç + eko-rota)</span>
+          <span><span class="dot" style="background:var(--hev)"></span>Sadece araç seçimi (en hızlı rota)</span>
+          <span><span class="dot" style="background:var(--fast)"></span>Klasik yöntemler</span>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Yolculukları hangi araç türü yaptı?</h3>
+        <div id="ptshare"></div>
+        <p class="note">Filo her senaryoda aynı: 15 model eşit olasılıkla rastgele atandı (tohum 1). Fark, işlerin kime verildiğinden geliyor.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-route">
+    <h2 id="h-route">Rota düzeyinde etki (500 gerçek yolculuk)</h2>
+    <div class="panel">
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between">
+        <p class="note" style="max-width:70ch">Aynı araç, aynı başlangıç-varış, aynı saat. Sadece rota değişiyor: en hızlı rota yerine eko-rota seçilince emisyon ne kadar düşüyor, yolculuk ne kadar uzuyor?</p>
+        <div class="seg" id="lamseg" role="group" aria-label="λ seçimi"></div>
+      </div>
+      <div class="tablebox"><table id="routetable"></table></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-method">
+    <h2 id="h-method">Yöntem ve veri</h2>
+    <div class="two">
+      <div class="panel prose">
+        <h3>1. Yol ağı ve hızlar: Porto GPS izleri</h3>
+        <p id="m-graph"></p>
+        <h3>2. Eğim: EU-DEM yükseklik modeli</h3>
+        <p>Her 400 m'lik satır boyunca hücre merkezlerinden yükseklik alındı (EU-DEM v1.1, 25 m çözünürlük, OpenTopoData). Kenar eğimi = yükseklik farkı / yol uzunluğu, ±%15 ile sınırlı. Kenarların %21'inde eğim %5'ten dik.</p>
+        <h3>3. ETA kalibrasyonu ve doğrulama</h3>
+        <p id="m-calib"></p>
+        <h3>4. Emisyon modeli</h3>
+        <div class="formula">F      = m·g·(Cr·cosθ + sinθ) + ½·ρ·CdA·v²
+PKE(v) = 0,10 + 0,5 / v          (dur-kalk, m/s²)
+E_net  = [max(F,0) + m·PKE]·d − r·[max(−F,0) + m·PKE]·d
+yakıtlı: g CO₂ = κ·max(E_net,0) + I·(WLTP/m)·t
+EV:      Wh    = κ·E_net + I·(WLTP/m)·t
+CO₂e   = egzoz × (1 + WTT)   ya da   kWh × şebeke faktörü</div>
+        <p>κ her araç için ayrı çözülür: model, WLTP çevriminin 4 fazında (düz yol) aracın resmi değeri × (1 + gerçek kullanım farkı) sonucunu birebir verir. Dur-kalk katsayıları, rejeneratif fren oranı r ve rölanti katsayısı I, gerçek araçların WLTP faz değerlerine uydurularak seçildi (benzinli: düşük hız fazı birleşiğin 1,32 katı; hibrit 0,89 katı; elektrikli 0,80 katı).</p>
+        <h3>5. Rota algoritması</h3>
+        <p>Dijkstra, maliyet = süre + λ·CO₂e. Elektrikli araçlar yokuş aşağı enerji geri kazandığı için bazı kenarların emisyonu negatif olabiliyor; Dijkstra bunu kaldırmaz. Çözüm: yüksekliğe dayalı potansiyel ile yeniden ağırlıklandırma (Johnson). Her kenara k·(h_başlangıç − h_bitiş) eklenir; bir yol boyunca toplam ekleme sadece iki uç noktanın yüksekliğine bağlı olduğundan en iyi rota değişmez ama bütün kenarlar ≥ 0 olur.</p>
+        <h3>6. Eşleştirme</h3>
+        <p>Her 30 saniyede bekleyen talepler ve boş taksiler Macar algoritmasıyla eşleştirilir. GreenMatch maliyeti: bekleme [dk] + eko-rotanın yolcuya getirdiği ek süre [dk] + λ·(alma + yolculuk CO₂e) [kg] + μ·(aracın günlük ortalamanın üstündeki iş sayısı). Son terim adalet terimi: işler hep temiz araçlara gitmesin (μ = 1 dk/iş). Yolcu en fazla 10 dakika bekler.</p>
+      </div>
+      <div class="panel prose">
+        <h3>Araçlar ve kaynaklar</h3>
+        <div class="tablebox"><table id="vehtable"></table></div>
+        <h3>Faktörler</h3>
+        <ul id="factors"></ul>
+        <h3>Sınırlamalar</h3>
+        <ul>
+          <li>Yol ağı 200 m hücrelerden oluşuyor; sokak düzeyinde değil. Mesafe hatası medyan %12,6.</li>
+          <li>Porto verisi 2013–2014'e ait; trafik hızları bugünle farklı olabilir. Veride araç modeli yok, 15 model rastgele atandı.</li>
+          <li>Filonun üçte biri elektrikli (eşit dağılım). Gerçek filoda bu oran düşükse tasarruf da düşer.</li>
+          <li>Hibrit ve LPG için gerçek kullanım farkı benzinli değeriyle varsayıldı; elektrikli için %15 varsayım.</li>
+          <li>Boş taksiler yeniden konumlandırılmıyor (durakta bekliyor). Gelecek talep tahmini bahar döneminde eklenecek.</li>
+          <li>ETA hatası %25,3: proposal'daki %25 hedefinin hemen üstünde.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>/*__CODE__*/</script>
+<script>window.DEMO = /*__DATA__*/;</script>
+<script>
+(function () {
+  'use strict';
+  const D = window.DEMO, G = window.PortoGrid, R = window.GreenRouter, E = window.GreenEmission;
+  const net = R.createNetwork(D.graph, D.calib);
+  const models = E.makeFleetModels(D.vehicles);
+  const emCache = new Map();
+  const emOf = k => { if (!emCache.has(k)) emCache.set(k, R.edgeEmissions(net, models[k])); return emCache.get(k); };
+  const PT = { ev: 'Elektrikli', hev: 'Hibrit', petrol: 'Benzinli', diesel: 'Dizel', lpg: 'LPG' };
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const fmt = (x, d = 1) => x.toLocaleString('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const fmt0 = x => Math.round(x).toLocaleString('tr-TR');
+  const pct = (a, b) => (a / b - 1) * 100;
+  const sgn = x => (x > 0 ? '+' : x < 0 ? '−' : '±') + fmt(Math.abs(x)) ;
+
+  // ---------- kontroller
+  const presets = [
+    ['Ribeira → Havalimanı', 41.1406, -8.6110, 41.2370, -8.6700],
+    ['Campanhã garı → Foz do Douro', 41.1486, -8.5855, 41.1490, -8.6740],
+    ['Boavista → Hospital São João', 41.1579, -8.6291, 41.1820, -8.6010],
+    ['Aliados → Matosinhos', 41.1496, -8.6109, 41.1840, -8.6900],
+    ['Foz do Douro → Aliados (yokuş yukarı)', 41.1490, -8.6740, 41.1496, -8.6109],
+  ];
+  const $ = id => document.getElementById(id);
+  presets.forEach((p, i) => $('preset').add(new Option(p[0], i)));
+  $('preset').add(new Option('Haritadan seçildi', 'custom'));
+  models.forEach((m, i) => $('model').add(new Option(`${m.name} · ${PT[m.pt]}`, i)));
+  D.graph.meta.buckets.forEach((b, i) => $('bucket').add(new Option(`${String(b[0]).padStart(2, '0')}:00–${String(b[1]).padStart(2, '0')}:00 ${b[2]}`, i)));
+  $('model').value = String(models.findIndex(m => m.id === 'corolla_ts'));
+  $('bucket').value = '3';
+  const st = { o: -1, d: -1, k: +$('model').value, b: 3, lam: 6, fast: null, eco: null };
+  function setPreset(i) { const p = presets[i]; st.o = net.nodeOfLonLat(p[2], p[1]); st.d = net.nodeOfLonLat(p[4], p[3]); }
+  setPreset(0);
+
+  // ---------- harita
+  const canvas = $('map'), box = $('mapbox');
+  let W = 0, H = 0, S = 1, X0 = 0, Y0 = 0;
+  const xs = net.xy.map(p => p[0]), ys = net.xy.map(p => p[1]);
+  const minX = Math.min(...xs) - 300, maxX = Math.max(...xs) + 300, minY = Math.min(...ys) - 300, maxY = Math.max(...ys) + 300;
+  function proj(x, y) { return [(x - minX) * S + X0, (maxY - y) * S + Y0]; }
+  function unproj(px, py) { return [(px - X0) / S + minX, maxY - (py - Y0) / S]; }
+  const landmarks = [['Ribeira', 41.1406, -8.6110], ['Havalimanı', 41.2370, -8.6700], ['Boavista', 41.1579, -8.6291], ['Campanhã', 41.1486, -8.5855], ['Matosinhos', 41.1840, -8.6900], ['Foz', 41.1490, -8.6740], ['V. N. de Gaia', 41.1240, -8.6100]];
+  function mix(a, b, t) { const p = s => [1, 3, 5].map(i => parseInt(s.slice(i, i + 2), 16)); const A = p(a), B = p(b); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',')})`; }
+  function draw() {
+    const r = box.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    W = r.width; H = r.height; canvas.width = W * dpr; canvas.height = H * dpr;
+    const c = canvas.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    S = Math.min(W / (maxX - minX), H / (maxY - minY)); X0 = (W - (maxX - minX) * S) / 2; Y0 = (H - (maxY - minY) * S) / 2;
+    c.fillStyle = css('--water'); c.fillRect(0, 0, W, H);
+    const l0 = css('--land0'), l1 = css('--land1'), cs = G.CELL * S;
+    for (let cy = 0; cy < G.NY; cy++) for (let cx = 0; cx < G.NX; cx++) {
+      const h = D.elevGrid[cy * G.NX + cx]; if (h < -100) continue;
+      const [x, y] = G.cellCenter(cy * G.NX + cx), [px, py] = proj(x, y);
+      c.fillStyle = mix(l0, l1, Math.min(1, Math.max(0, h / 230))); c.fillRect(px - cs / 2, py - cs / 2, cs + 0.6, cs + 0.6);
+    }
+    c.strokeStyle = css('--edge'); c.lineWidth = 1; c.beginPath();
+    for (let e = 0; e < net.m; e++) { const a = proj(...net.xy[net.from[e]]), b = proj(...net.xy[net.to[e]]); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); }
+    c.stroke();
+    c.font = '11px ' + css('--font-body'); c.fillStyle = css('--muted');
+    for (const [n, la, lo] of landmarks) { const [x, y] = G.xy([lo, la]); const [px, py] = proj(x, y); c.fillText(n, px + 5, py - 4); c.fillRect(px - 1.5, py - 1.5, 3, 3); }
+    const line = (route, col, w, dash) => { if (!route) return; c.strokeStyle = col; c.lineWidth = w; c.setLineDash(dash || []); c.lineJoin = 'round'; c.lineCap = 'round'; c.beginPath(); R.routeNodes(net, route.edges, st.o).forEach((n, i) => { const [px, py] = proj(...net.xy[n]); i ? c.lineTo(px, py) : c.moveTo(px, py); }); c.stroke(); c.setLineDash([]); };
+    line(st.eco, css('--eco'), 6);
+    line(st.fast, css('--fast'), 2.2, [6, 4]);
+    const pin = (n, label) => { if (n < 0) return; const [px, py] = proj(...net.xy[n]); c.fillStyle = css('--panel'); c.strokeStyle = css('--fg'); c.lineWidth = 2; c.beginPath(); c.arc(px, py, 8, 0, 7); c.fill(); c.stroke(); c.fillStyle = css('--fg'); c.font = '600 10px ' + css('--font-body'); c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(label, px, py + .5); c.textAlign = 'left'; c.textBaseline = 'alphabetic'; };
+    pin(st.o, 'A'); pin(st.d, 'B');
+  }
+  let clickPhase = 0;
+  box.addEventListener('click', ev => {
+    const r = box.getBoundingClientRect(); const [x, y] = unproj(ev.clientX - r.left, ev.clientY - r.top);
+    const [lo, la] = G.lonlat(x, y); const n = net.nodeOfLonLat(lo, la); if (n < 0) return;
+    if (clickPhase === 0) { st.o = n; st.d = -1; st.fast = st.eco = null; clickPhase = 1; $('maphint').textContent = 'Varış için tıklayın'; draw(); }
+    else { st.d = n; clickPhase = 0; $('maphint').textContent = 'Yeni başlangıç için tıklayın'; $('preset').value = 'custom'; compute(); }
+  });
+  box.addEventListener('mousemove', ev => {
+    const r = box.getBoundingClientRect(); const [x, y] = unproj(ev.clientX - r.left, ev.clientY - r.top);
+    const cell = G.cellOf(G.lonlat(x, y)); const tip = $('maptip');
+    if (cell < 0 || D.elevGrid[cell] < -100) { tip.hidden = true; return; }
+    tip.hidden = false; tip.textContent = `${fmt0(D.elevGrid[cell])} m`; tip.style.left = Math.min(ev.clientX - r.left + 12, r.width - 60) + 'px'; tip.style.top = (ev.clientY - r.top + 12) + 'px';
+  });
+  box.addEventListener('mouseleave', () => { $('maptip').hidden = true; });
+
+  // ---------- hesap
+  function compute() {
+    if (st.o < 0 || st.d < 0) { draw(); return; }
+    const em = emOf(st.k);
+    st.fast = R.route(net, st.o, st.d, st.b, em, 0, true);
+    st.eco = R.route(net, st.o, st.d, st.b, em, st.lam, true);
+    const ov = D.calib.overheadS || 0;
+    const rows = [
+      ['Süre', fmt((st.fast.timeS + ov) / 60) + ' dk', fmt((st.eco.timeS + ov) / 60) + ' dk'],
+      ['Mesafe', fmt(st.fast.distM / 1000, 2) + ' km', fmt(st.eco.distM / 1000, 2) + ' km'],
+      ['Tırmanış', fmt0(st.fast.climbM) + ' m', fmt0(st.eco.climbM) + ' m'],
+      ['CO₂e', fmt0(st.fast.co2g) + ' g', fmt0(st.eco.co2g) + ' g'],
+    ];
+    $('cmp').innerHTML = '<span></span><span class="h">En hızlı</span><span class="h">Eko (λ ' + st.lam + ')</span>' + rows.map(r => `<span class="k">${r[0]}</span><span class="v">${r[1]}</span><span class="v">${r[2]}</span>`).join('');
+    const dC = st.fast.co2g ? pct(st.eco.co2g, st.fast.co2g) : 0, dT = pct(st.eco.timeS + ov, st.fast.timeS + ov);
+    const same = st.eco.edges.join() === st.fast.edges.join();
+    $('verdict').innerHTML = same ? '<span class="chip">Bu yolculukta en hızlı rota zaten en temiz rota</span>'
+      : `<span class="chip ${dC < 0 ? 'good' : 'bad'}">CO₂e ${sgn(dC)} %</span> <span class="chip ${dT > 10 ? 'warn' : ''}">süre ${sgn(dT)} %</span>`;
+    // 15 model
+    const out = models.map((m, k) => {
+      const e = emOf(k); let g = 0; for (const ed of st.fast.edges) g += e.loaded[st.b][ed];
+      const eco = R.route(net, st.o, st.d, st.b, e, st.lam, true);
+      return { m, k, g, eco: eco.co2g, t: eco.timeS };
+    }).sort((a, b) => a.g - b.g);
+    const max = Math.max(...out.map(o => o.g));
+    $('allmodels').innerHTML = '<tr><th>Model</th><th>Tür</th><th>En hızlı rota</th><th class="bar"></th><th>Eko-rota (λ ' + st.lam + ')</th><th>Eko süre</th></tr>' + out.map(o =>
+      `<tr${o.k === st.k ? ' class="hl"' : ''}><td>${o.m.name}</td><td><span class="dot" style="background:var(--${o.m.pt})"></span>${PT[o.m.pt]}</td><td>${fmt0(o.g)} g</td><td class="bar" style="text-align:left"><span class="mbar" style="width:${Math.max(2, o.g / max * 120)}px;background:var(--${o.m.pt})"></span></td><td>${fmt0(o.eco)} g</td><td>${fmt((o.t + ov) / 60)} dk</td></tr>`).join('');
+    draw();
+  }
+  $('preset').addEventListener('change', e => { if (e.target.value !== 'custom') { setPreset(+e.target.value); clickPhase = 0; $('maphint').textContent = 'Başlangıç için tıklayın'; compute(); } });
+  $('model').addEventListener('change', e => { st.k = +e.target.value; compute(); });
+  $('bucket').addEventListener('change', e => { st.b = +e.target.value; compute(); });
+  const lamIn = $('lambda'); const showLam = () => { $('lamv').textContent = lamIn.value + ' dk/kg'; };
+  lamIn.addEventListener('input', () => { st.lam = +lamIn.value; showLam(); compute(); });
+  showLam();
+  window.addEventListener('resize', draw);
+  if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { draw(); renderPareto(); });
+  new MutationObserver(() => { draw(); renderPareto(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // ---------- simülasyon sonuçları
+  const runs = D.summary;
+  const pick = (algo, lam, fair) => runs.filter(r => r.algo === algo && r.lambda === lam && r.fair === fair);
+  const avg = (rs, f) => rs.reduce((s, r) => s + f(r), 0) / rs.length;
+  const A = {
+    nearest: pick('nearest', 0, 0), batch: pick('batch_eta', 0, 0), gfast: pick('green_fast', 6, 1), green: pick('green', 6, 1),
+  };
+  const sim = D.simday;
+  $('simsub').textContent = `Gerçek talep: o günün ${fmt0(sim.requests)} taksi yolculuğu (başlangıç, varış, saat). Gerçek arz: o gün çalışan ${sim.taxis} taksi, her biri kendi vardiyasında (ilk yolculuğundan 15 dk önce, son yolculuğundan 15 dk sonra). Her taksiye 15 modelden biri rastgele atandı. Aynı talep ve filo dört algoritmayla çalıştırıldı.`;
+  const b = A.batch, g = A.green;
+  const kp = [
+    [fmt(pct(avg(g, r => r.gPerPkm), avg(b, r => r.gPerPkm))) + ' %', 'yolcu-km başına CO₂e, Toplu ETA\'ya göre (hedef ≤ −%10)'],
+    [fmt0(avg(b, r => r.co2kg) - avg(g, r => r.co2kg)) + ' kg', 'günlük CO₂e tasarrufu (' + sim.taxis + ' taksi, tek gün)'],
+    ['+' + fmt(pct(avg(g, r => r.waitMeanMin), avg(b, r => r.waitMeanMin))) + ' %', 'ortalama bekleme (hedef ≤ +%10)'],
+    [fmt(avg(g, r => r.gini), 2) + ' / ' + fmt(avg(b, r => r.gini), 2), 'iş dağılımı Gini: GreenMatch / Toplu ETA (düşük = daha adil)'],
+  ];
+  $('kpis').innerHTML = kp.map(k => `<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join('');
+  const cols = [
+    ['Algoritma', null], ['g CO₂e / yolcu-km', r => fmt(r.gPerPkm)], ['Toplam CO₂e', r => fmt0(r.co2kg) + ' kg'], ['Ort. bekleme', r => fmt(r.waitMeanMin, 2) + ' dk'],
+    ['%95 bekleme', r => fmt(r.waitP95Min, 1) + ' dk'], ['Boş km payı', r => fmt(r.emptyShare * 100) + ' %'], ['Yolculuk uzaması', r => fmt(r.rideDetourPct) + ' %'],
+    ['Hizmet', r => fmt(r.serviceRate * 100) + ' %'], ['Gini', r => fmt(r.gini, 3)],
+  ];
+  const names = { nearest: 'En yakın araç', batch: 'Toplu ETA (Macar)', gfast: 'GreenMatch: sadece araç seçimi', green: 'GreenMatch: araç + eko-rota' };
+  const meanRow = rs => { const o = {}; for (const k of ['gPerPkm', 'co2kg', 'waitMeanMin', 'waitP95Min', 'emptyShare', 'rideDetourPct', 'serviceRate', 'gini']) o[k] = avg(rs, r => r[k]); return o; };
+  $('algtable').innerHTML = '<tr>' + cols.map(c => `<th>${c[0]}</th>`).join('') + '<th>Fark (g/yolcu-km)</th></tr>' + Object.keys(names).map(k => {
+    const m = meanRow(A[k]); const d = pct(m.gPerPkm, meanRow(A.batch).gPerPkm);
+    return `<tr${k === 'green' ? ' class="hl"' : ''}><td>${names[k]}</td>` + cols.slice(1).map(c => `<td>${c[1](m)}</td>`).join('') + `<td>${k === 'batch' ? 'referans' : sgn(d) + ' %'}</td></tr>`;
+  }).join('');
+  $('algnote').textContent = 'GreenMatch: λ = 6 dk/kg, adalet μ = 1 dk/iş. Yolcu-km, her algoritmada en hızlı rotanın uzunluğu (eko-rota kısa diye payda küçülmesin). Tohumlar arası fark filodaki model dağılımından geliyor; tablo 3 tohumun ortalaması.';
+
+  // ---------- Pareto
+  function renderPareto() {
+    const host = $('pareto'); const w = Math.max(280, host.clientWidth || 520), h = 260, m = { l: 48, r: 16, t: 12, b: 36 };
+    const pts = [];
+    for (const r of runs.filter(r => r.seed === 1)) {
+      let grp = r.algo === 'green' ? 'eco' : r.algo === 'green_fast' ? 'hev' : 'fast';
+      if (r.fair === 0 && r.algo !== 'nearest' && r.algo !== 'batch_eta') continue;
+      pts.push({ x: r.waitMeanMin, y: r.gPerPkm, grp, label: r.algo === 'nearest' ? 'En yakın' : r.algo === 'batch_eta' ? 'Toplu ETA' : 'λ ' + r.lambda, r });
+    }
+    const x0 = 3.0, x1 = 4.2, y0 = 130, y1 = 220;
+    const X = v => m.l + (v - x0) / (x1 - x0) * (w - m.l - m.r), Y = v => h - m.b - (v - y0) / (y1 - y0) * (h - m.t - m.b);
+    const col = { eco: css('--eco'), hev: css('--hev'), fast: css('--fast') };
+    let s = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="Bekleme süresine karşı yolcu-km başına emisyon">`;
+    for (let v = 140; v <= 220; v += 20) s += `<line class="ax" x1="${m.l}" x2="${w - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${m.l - 6}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`;
+    for (let v = 3.0; v <= 4.21; v += 0.2) s += `<text x="${X(v)}" y="${h - m.b + 16}" text-anchor="middle">${fmt(v)}</text>`;
+    s += `<text x="${(w + m.l) / 2}" y="${h - 4}" text-anchor="middle">ortalama bekleme (dk)</text><text x="12" y="${m.t + 4}" transform="rotate(-90 12 ${m.t + 4})" text-anchor="end">g CO₂e / yolcu-km</text>`;
+    // hedef bölge: Toplu ETA'ya göre ≤ +%10 bekleme ve ≤ −%10 emisyon (tohum 1)
+    const bt = runs.find(r => r.algo === 'batch_eta' && r.seed === 1);
+    s += `<rect x="${X(x0)}" y="${Y(bt.gPerPkm * 0.9)}" width="${X(bt.waitMeanMin * 1.1) - X(x0)}" height="${Y(y0) - Y(bt.gPerPkm * 0.9)}" fill="${css('--soft')}" stroke="${css('--line')}" stroke-dasharray="4 3"/>`;
+    s += `<text x="${X(x0) + 6}" y="${Y(y0) - 6}">hedef bölge</text>`;
+    for (const grp of ['eco', 'hev']) { const p = pts.filter(q => q.grp === grp).sort((a, b) => a.r.lambda - b.r.lambda); s += `<polyline fill="none" stroke="${col[grp]}" stroke-width="2" points="${p.map(q => X(q.x) + ',' + Y(q.y)).join(' ')}"/>`; }
+    for (const p of pts) s += `<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="5" fill="${col[p.grp]}" stroke="${css('--panel')}" stroke-width="2"><title>${p.label}: ${fmt(p.y)} g/yolcu-km, ${fmt(p.x, 2)} dk</title></circle>`;
+    for (const p of pts) if (p.grp !== 'hev' || p.r.lambda === 24) s += `<text x="${X(p.x) + 8}" y="${Y(p.y) - 6}">${p.label}</text>`;
+    s += '</svg>';
+    host.innerHTML = s;
+  }
+  renderPareto(); window.addEventListener('resize', renderPareto);
+
+  // ---------- araç türü payları (tohum 1)
+  const share = { 'En yakın': runs.find(r => r.algo === 'nearest' && r.seed === 1), 'Toplu ETA': runs.find(r => r.algo === 'batch_eta' && r.seed === 1), 'GM araç seçimi': runs.find(r => r.algo === 'green_fast' && r.lambda === 6 && r.fair === 1 && r.seed === 1), 'GM araç + rota': runs.find(r => r.algo === 'green' && r.lambda === 6 && r.fair === 1 && r.seed === 1) };
+  const pts5 = ['ev', 'hev', 'lpg', 'petrol', 'diesel'];
+  const fleet = share['Toplu ETA'].fleetByPowertrain, ftot = Object.values(fleet).reduce((a, b) => a + b, 0);
+  $('ptshare').innerHTML = '<div style="display:grid;gap:8px">' + [['Filo', Object.fromEntries(pts5.map(p => [p, { share: (fleet[p] || 0) / ftot }]))], ...Object.entries(share).map(([k, r]) => [k, r.byPowertrain])].map(([k, bp]) =>
+    `<div style="display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px;align-items:center"><span style="font-size:12px;color:var(--muted)">${k}</span><div style="display:flex;height:14px;gap:2px">${pts5.map(p => `<span title="${PT[p]}: ${fmt(bp[p].share * 100)} %" style="flex:${bp[p].share};background:var(--${p})"></span>`).join('')}</div></div>`).join('') +
+    '</div><div class="legend" style="margin-top:8px">' + pts5.map(p => `<span><span class="dot" style="background:var(--${p})"></span>${PT[p]}</span>`).join('') + '</div>';
+
+  // ---------- rota düzeyi
+  const RE = D.routeEval; let lamSel = 6;
+  RE.lambdas.forEach(l => { const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = 'λ ' + l; bt.setAttribute('aria-pressed', String(l === lamSel)); bt.addEventListener('click', () => { lamSel = l; [...$('lamseg').children].forEach(c => c.setAttribute('aria-pressed', String(c === bt))); renderRoute(); }); $('lamseg').appendChild(bt); });
+  function renderRoute() {
+    $('routetable').innerHTML = '<tr><th>Model</th><th>Tür</th><th>En hızlı rotada g/km</th><th>CO₂e tasarrufu</th><th>Süre artışı</th><th>Tırmanış değişimi</th><th>Rotası değişen yolculuk</th></tr>' + RE.models.map(m => { const v = m.byLambda[lamSel];
+      return `<tr><td>${m.name}</td><td><span class="dot" style="background:var(--${m.pt})"></span>${PT[m.pt]}</td><td>${fmt0(v.gPerKmFast)}</td><td><span class="chip good">−${fmt(v.co2SavePct)} %</span></td><td>+${fmt(v.timeAddPct)} %</td><td>${sgn(v.climbChangePct)} %</td><td>${v.routesChangedPct} %</td></tr>`; }).join('');
+  }
+  renderRoute();
+
+  // ---------- yöntem metinleri
+  const gm = D.graph.meta, cv = D.calib.validation;
+  $('m-graph').textContent = `ECML/PKDD 2015 Porto taksi verisi (Temmuz 2013 – Haziran 2014, 1.710.670 yolculuk, 15 sn aralıklı GPS). Şehir 200 m'lik hücrelere bölündü; bir taksi bir hücreden komşusuna geçtiğinde o yönlü kenar için hız kaydedildi (hafta içi, ${fmt0(gm.transitions_used)} geçiş). En az 20 kez gözlenen kenarlar tutuldu, en büyük güçlü bağlı bileşen alındı: ${fmt0(gm.nodes)} düğüm, ${fmt0(gm.edges)} yönlü kenar. Her kenar için 5 saat diliminde harmonik ortalama hız; her hücre için ışık ve kavşaklardaki ortalama duraklama süresi. Doğrulama yolculukları hız hesabına hiç girmedi.`;
+  $('m-calib').textContent = `${fmt0(cv.trips_fit + cv.trips_test)} doğrulama yolculuğunun yarısıyla kalibre edildi, diğer yarısında ölçüldü. Yol uzunluğu = hücre rotası × ${fmt(D.calib.detour, 3)}; süre = ${D.calib.overheadS} sn (alma/bırakma) + graf süresi × saat dilimi katsayısı (${D.calib.timeFactor.map(x => fmt(x, 2)).join(' / ')}). Test kümesinde ETA hatası (MAPE) %${fmt(cv.eta_graph.MAPE)}, medyan %${fmt(cv.eta_graph.medianAPE)}. Karşılaştırma için kuş uçuşu mesafe / ortalama hız tahmini: MAPE %${fmt(cv.eta_naive_straightline.MAPE)}. Medyan yolculuk ${fmt(cv.median_actual_min)} dk, ${fmt(cv.median_gps_km, 2)} km.`;
+  $('vehtable').innerHTML = '<tr><th>Model</th><th>WLTP</th><th>Kütle</th><th>Gerçek kullanımda g CO₂e/km</th></tr>' + models.map((m, i) => { const s = D.vehicles.vehicles[i]; const url = (s.src.match(/https?:\/\/\S+/) || [''])[0];
+    return `<tr><td><span class="dot" style="background:var(--${m.pt})"></span>${url ? `<a href="${url}" target="_blank" rel="noopener">${m.name}</a>` : m.name}</td><td>${m.isEV ? fmt0(s.wltp) + ' Wh/km' : fmt(s.wltp) + ' g/km'}</td><td>${fmt0(s.mass_kg)}${s.mass_estimated ? '*' : ''} kg</td><td>${fmt0(m.wltpWtwGkm)}</td></tr>`; }).join('');
+  const F = D.vehicles.factors;
+  $('factors').innerHTML = [
+    `Gerçek kullanım farkı: benzinli %21, dizel %17 (Avrupa Komisyonu, OBFCM 2022 verisi); hibrit ve LPG %21, elektrikli %15 (varsayım).`,
+    `Kuyudan tanka oranı: benzin %28, dizel %24, LPG %12 (UK DESNZ/DEFRA dönüşüm faktörleri).`,
+    `Portekiz şebekesi: ${fmt(F.grid_g_per_kwh)} g CO₂e/kWh (Electricity Maps, 2025 ortalaması).`,
+    `* Octavia 1.5 TSI ağırlığı bulunamadı, 1.350 kg tahmin edildi.`,
+  ].map(x => `<li>${x}</li>`).join('');
+
+  compute();
+})();
+</script>

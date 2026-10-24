@@ -1,0 +1,596 @@
+{
+ "n": 500,
+ "lambdas": [
+  2,
+  6,
+  12,
+  24
+ ],
+ "models": [
+  {
+   "id": "tesla_m3",
+   "name": "Tesla Model 3 RWD (2023-)",
+   "pt": "ev",
+   "byLambda": {
+    "2": {
+     "gPerKmFast": 20,
+     "co2SavePct": 0.8,
+     "timeAddPct": 0,
+     "distChangePct": -0.6,
+     "climbChangePct": -0.9,
+     "routesChangedPct": 4
+    },
+    "6": {
+     "gPerKmFast": 20,
+     "co2SavePct": 1.9,
+     "timeAddPct": 0.1,
+     "distChangePct": -1.5,
+     "climbChangePct": -2.6,
+     "routesChangedPct": 14
+    },
+    "12": {
+     "gPerKmFast": 20,
+     "co2SavePct": 4.1,
+     "timeAddPct": 0.3,
+     "distChangePct": -3.1,
+     "climbChangePct": -5.1,
+     "routesChangedPct": 23
+    },
+    "24": {
+     "gPerKmFast": 20,
+     "co2SavePct": 8.3,
+     "timeAddPct": 1.1,
+     "distChangePct": -6.5,
+     "climbChangePct": -9.1,
+     "routesChangedPct": 36
+    }
+   }
+  },
+  {
+   "id": "kia_niro_ev",
+   "name": "Kia Niro EV 64,8 kWh (2022-)",
+   "pt": "ev",
+   "byLambda": {
+    "2": {
+     "gPerKmFast": 24,
+     "co2SavePct": 1.1,
+     "timeAddPct": 0,
+     "distChangePct": -0.9,
+     "climbChangePct": -1.1,
+     "routesChangedPct": 5
+    },
+    "6": {
+     "gPerKmFast": 24,
+     "co2SavePct": 2.5,
+     "timeAddPct": 0.1,
+     "distChangePct": -1.7,
+     "climbChangePct": -2.8,
+     "routesChangedPct": 15
+    },
+    "12": {
+     "gPerKmFast": 24,
+     "co2SavePct": 6.2,
+     "timeAddPct": 0.6,
+     "distChangePct": -4.5,
+     "climbChangePct": -6.8,
+     "routesChangedPct": 26
+    },
+    "24": {
+     "gPerKmFast": 24,
+     "co2SavePct": 10.1,
+     "timeAddPct": 1.5,
+     "distChangePct": -7.4,
+     "climbChangePct": -10.8,
+     "routesChangedPct": 40
+    }
+   }
+  },
+  {
+   "id": "ioniq5_58",
+   "name": "Hyundai IONIQ 5 58 kWh RWD (2021-24)",
+   "pt": "ev",
+   "byLambda": {
+    "2": {
+     "gPerKmFast": 24.3,
+     "co2SavePct": 1.1,
+     "timeAddPct": 0,
+     "distChangePct": -0.9,
+     "climbChangePct": -1.1,
+     "routesChangedPct": 5
+    },
+    "6": {
+     "gPerKmFast": 24.3,
+     "co2SavePct": 2.5,
+     "timeAddPct": 0.1,
+     "distChangePct": -1.8,
+     "climbChangePct": -2.9,
+     "routesChangedPct": 15
+    },
+    "12": {
+     "gPerKmFast": 24.3,
+     "co2SavePct": 6.4,
+     "timeAddPct": 0.6,
+     "distChangePct": -4.7,
+     "climbChangePct": -7.1,
+     "routesChangedPct": 27
+    },
+    "24": {
+     "gPerKmFast": 24.3,
+     "co2SavePct": 10.2,
+     "timeAddPct": 1.6,
+     "distChangePct": -7.4,
+     "climbChangePct": -10.9,
+     "routesChangedPct": 40
+    }
+   }
+  },
+  {
+   "id": "vw_id4",
+   "name": "Volkswagen ID.4 Pro (2023-25)",
+   "pt": "ev",
+   "byLambda": {
+    "2": {
+     "gPerKmFast": 25.4,
+     "co2SavePct": 1,
+     "timeAddPct": 0,
+     "distChangePct": -0.9,
+     "climbChangePct": -1.1,
+     "routesChangedPct": 5
+    },
+    "6": {
+     "gPerKmFast": 25.4,
+     "co2SavePct": 2.5,
+     "timeAddPct": 0.1,
+     "distChangePct": -1.8,
+     "climbChangePct": -2.9,
+     "routesChangedPct": 16
+    },
+    "12": {
+     "gPerKmFast": 25.4,
+     "co2SavePct": 6.3,
+     "timeAddPct": 0.6,
+     "distChangePct": -4.7,
+     "climbChangePct": -7.1,
+     "routesChangedPct": 27
+    },
+    "24": {
+     "gPerKmFast": 25.4,
+     "co2SavePct": 10.1,
+     "timeAddPct": 1.6,
+     "distChangePct": -7.4,
+     "climbChangePct": -10.6,
+     "routesChangedPct": 41
+    }
+   }
+  },
+  {
+   "id": "leaf_40",
+   "name": "Nissan LEAF 40 kWh (2022-24)",
+   "pt": "ev",
+   "byLambda": {
+    "2": {
+     "gPerKmFast": 25,
+     "co2SavePct": 1.1,
+     "timeAddPct": 0,
+     "distChangePct": -0.9,
+     "climbChangePct": -1.1,
+     "routesChangedPct": 5
+    },
+    "6": {
+     "gPerKmFast": 25,
+     "co2SavePct": 2.5,
+     "timeAddPct": 0.1,
+     "distChangePct": -1.8,
+     "climbChangePct": -2.9,
+     "routesChangedPct": 15
+    },
+    "12": {
+     "gPerKmFast": 25,
+     "co2SavePct": 6.4,
+     "timeAddPct": 0.6,
+     "distChangePct": -4.7,
+     "climbChangePct": -7.1,
+     "routesChangedPct": 27
+    },
+    "24": {
+     "gPerKmFast": 25,
+     "co2SavePct": 10.3,
+     "timeAddPct": 1.6,
+     "distChangePct": -7.5,
+     "climbChangePct": -11,
+     "routesChangedPct": 41
+    }
+   }
+  },
+  {
+   "id": "corolla_ts",
+   "name": "Toyota Corolla Touring Sports 1.8 Hybrid 140 (2023)",
+   "pt": "hev",
+   "byLambda": {
+    "2": {
+     "gPerKmFast": 207.3,
+     "co2SavePct": 7.7,
+     "timeAddPct": 0.8,
+     "distChangePct": -5.2,
+     "climbChangePct": -10,
+     "routesChangedPct": 33
+    },
+    "6": {
+     "gPerKmFast": 207.3,
+     "co2SavePct": 15.7,
+     "timeAddPct": 4.4,
+     "distChangePct": -10.5,
+     "climbChangePct": -20.6,
+     "routesChangedPct": 56
+    },
+    "12": {
+     "gPerKmFast": 207.3,
+     "co2SavePct": 20.2,
+     "timeAddPct": 9.3,
+     "distChangePct": -13.4,
+     "climbChangePct": -25.5,
+     "routesChangedPct": 69
+    },
+    "24": {
+     "gPerKmFast": 207.3,
+     "co2SavePct": 23.7,
+     "timeAddPct": 16.3,
+     "distChangePct": -15.7,
+     "climbChangePct": -29.1,
+     "routesChangedPct": 76
+    }
+   }
+  },
+  {
+   "id": "niro_hev",
+   "name": "Kia Niro 1.6 GDi Hybrid 141 (2022)",
+   "pt": "hev",
+   "byLambda": {
+    "2": {
+     "gPerKmFast": 198.3,
+     "co2SavePct": 7.4,
+     "timeAddPct": 0.8,
+     "distChangePct": -4.9,
+     "climbChangePct": -9.7,
+     "routesChangedPct": 32
+    },
+    "6": {
+     "gPerKmFast": 198.3,
+     "co2SavePct": 15.4,
+     "timeAddPct": 4.2,
+     "distChangePct": -10.2,
+     "climbChangePct": -20.1,
+     "routesChangedPct": 55
+    },
+    "12": {
+     "gPerKmFast": 198.3,
+     "co2SavePct": 20.2,
+     "timeAddPct": 8.9,
+     "distChangePct": -13.3,
+     "climbChangePct": -25,
+     "routesChangedPct": 68
+    },
+    "24": {
+     "gPerKmFast": 198.3,
+     "co2SavePct": 23.8,
+     "timeAddPct": 16,
+     "distChangePct": -15.7,
+     "climbChangePct": -28.7,
+     "routesChangedPct": 76
+    }
+   }
+  },
+  {
+   "id": "chr_hev",
+   "name": "Toyota C-HR 1.8 Hybrid 140 (2023-)",
+   "pt": "hev",
+   "byLambda": {
+    "2": {
+     "gPerKmFast": 213.3,
+     "co2SavePct": 8,
+     "timeAddPct": 0.9,
+     "distChangePct": -5.4,
+     "climbChangePct": -10.3,
+     "routesChangedPct": 33
+    },
+    "6": {
+     "gPerKmFast": 213.3,
+     "co2SavePct": 16.4,
+     "timeAddPct": 4.9,
+     "distChangePct": -10.9,
+     "climbChangePct": -20.9,
+     "routesChangedPct": 58
+    },
+    "12": {
+     "gPerKmFast": 213.3,
+     "co2SavePct": 20.9,
+     "timeAddPct": 9.9,
+     "distChangePct": -13.8,
+     "climbChangePct": -25.7,
+     "routesChangedPct": 69
+    },
+    "24": {
+     "gPerKmFast": 213.3,
+     "co2SavePct": 24.2,
+     "timeAddPct": 16.9,
+     "distChangePct": -15.8,
+     "climbChangePct": -29.3,
+     "routesChangedPct": 76
+    }
+   }
+  },
+  {
+   "id": "rav4_hev",
+   "name": "Toyota RAV4 2.5 Hybrid 2WD 218 (2022)",
+   "pt": "hev",
+   "byLambda": {
+    "2": {
+     "gPerKmFast": 253.5,
+     "co2SavePct": 9.2,
+     "timeAddPct": 1.2,
+     "distChangePct": -6.1,
+     "climbChangePct": -12.2,
+     "routesChangedPct": 37
+    },
+    "6": {
+     "gPerKmFast": 253.5,
+     "co2SavePct": 17.2,
+     "timeAddPct": 5.6,
+     "distChangePct": -11.5,
+     "climbChangePct": -21.9,
+     "routesChangedPct": 61
+    },
+    "12": {
+     "gPerKmFast": 253.5,
+     "co2SavePct": 21.7,
+     "timeAddPct": 11.2,
+     "distChangePct": -14.2,
+     "climbChangePct": -26.4,
+     "routesChangedPct": 72
+    },
+    "24": {
+     "gPerKmFast": 253.5,
+     "co2SavePct": 24.9,
+     "timeAddPct": 19.3,
+     "distChangePct": -16.3,
+     "climbChangePct": -29.9,
+     "routesChangedPct": 78
+    }
+   }
+  },
+  {
+   "id": "e220d",
+   "name": "Mercedes-Benz E 220 d (W214, 2024-)",
+   "pt": "diesel",
+   "byLambda": {
+    "2": {
+     "gPerKmFast": 239.9,
+     "co2SavePct": 3,
+     "timeAddPct": 0.4,
+     "distChangePct": -3.3,
+     "climbChangePct": -7.4,
+     "routesChangedPct": 23
+    },
+    "6": {
+     "gPerKmFast": 239.9,
+     "co2SavePct": 5.8,
+     "timeAddPct": 1.7,
+     "distChangePct": -7.4,
+     "climbChangePct": -14.3,
+     "routesChangedPct": 44
+    },
+    "12": {
+     "gPerKmFast": 239.9,
+     "co2SavePct": 7.4,
+     "timeAddPct": 3.7,
+     "distChangePct": -10.1,
+     "climbChangePct": -19.5,
+     "routesChangedPct": 52
+    },
+    "24": {
+     "gPerKmFast": 239.9,
+     "co2SavePct": 8.1,
+     "timeAddPct": 5.3,
+     "distChangePct": -11.5,
+     "climbChangePct": -21.9,
+     "routesChangedPct": 61
+    }
+   }
+  },
+  {
+   "id": "octavia_tdi",
+   "name": "Skoda Octavia Combi 2.0 TDI 115 (2024-)",
+   "pt": "diesel",
+   "byLambda": {
+    "2": {
+     "gPerKmFast": 224.8,
+     "co2SavePct": 2.9,
+     "timeAddPct": 0.4,
+     "distChangePct": -3.2,
+     "climbChangePct": -7.3,
+     "routesChangedPct": 23
+    },
+    "6": {
+     "gPerKmFast": 224.8,
+     "co2SavePct": 5.8,
+     "timeAddPct": 1.8,
+     "distChangePct": -7.4,
+     "climbChangePct": -14.2,
+     "routesChangedPct": 43
+    },
+    "12": {
+     "gPerKmFast": 224.8,
+     "co2SavePct": 7.4,
+     "timeAddPct": 3.6,
+     "distChangePct": -10,
+     "climbChangePct": -19.3,
+     "routesChangedPct": 52
+    },
+    "24": {
+     "gPerKmFast": 224.8,
+     "co2SavePct": 8.2,
+     "timeAddPct": 5.3,
+     "distChangePct": -11.5,
+     "climbChangePct": -21.9,
+     "routesChangedPct": 61
+    }
+   }
+  },
+  {
+   "id": "p508_hdi",
+   "name": "Peugeot 508 SW 1.5 BlueHDi 130 EAT8 (2023-)",
+   "pt": "diesel",
+   "byLambda": {
+    "2": {
+     "gPerKmFast": 260.2,
+     "co2SavePct": 3.3,
+     "timeAddPct": 0.5,
+     "distChangePct": -3.6,
+     "climbChangePct": -8,
+     "routesChangedPct": 26
+    },
+    "6": {
+     "gPerKmFast": 260.2,
+     "co2SavePct": 6.1,
+     "timeAddPct": 2,
+     "distChangePct": -7.9,
+     "climbChangePct": -14.9,
+     "routesChangedPct": 45
+    },
+    "12": {
+     "gPerKmFast": 260.2,
+     "co2SavePct": 7.6,
+     "timeAddPct": 3.9,
+     "distChangePct": -10.4,
+     "climbChangePct": -19.7,
+     "routesChangedPct": 54
+    },
+    "24": {
+     "gPerKmFast": 260.2,
+     "co2SavePct": 8.3,
+     "timeAddPct": 5.6,
+     "distChangePct": -11.7,
+     "climbChangePct": -22.3,
+     "routesChangedPct": 61
+    }
+   }
+  },
+  {
+   "id": "octavia_tsi",
+   "name": "Skoda Octavia 1.5 TSI 150 (2024-)",
+   "pt": "petrol",
+   "byLambda": {
+    "2": {
+     "gPerKmFast": 252.9,
+     "co2SavePct": 4.1,
+     "timeAddPct": 0.6,
+     "distChangePct": -4.3,
+     "climbChangePct": -8.7,
+     "routesChangedPct": 28
+    },
+    "6": {
+     "gPerKmFast": 252.9,
+     "co2SavePct": 7.1,
+     "timeAddPct": 2.2,
+     "distChangePct": -8.3,
+     "climbChangePct": -15.3,
+     "routesChangedPct": 46
+    },
+    "12": {
+     "gPerKmFast": 252.9,
+     "co2SavePct": 9,
+     "timeAddPct": 4.6,
+     "distChangePct": -11.1,
+     "climbChangePct": -20.7,
+     "routesChangedPct": 58
+    },
+    "24": {
+     "gPerKmFast": 252.9,
+     "co2SavePct": 9.9,
+     "timeAddPct": 7,
+     "distChangePct": -12.7,
+     "climbChangePct": -23.9,
+     "routesChangedPct": 64
+    }
+   }
+  },
+  {
+   "id": "logan_tce",
+   "name": "Dacia Logan 1.0 TCe 90 (2022-)",
+   "pt": "petrol",
+   "byLambda": {
+    "2": {
+     "gPerKmFast": 238.6,
+     "co2SavePct": 4,
+     "timeAddPct": 0.5,
+     "distChangePct": -4,
+     "climbChangePct": -8.3,
+     "routesChangedPct": 28
+    },
+    "6": {
+     "gPerKmFast": 238.6,
+     "co2SavePct": 7.2,
+     "timeAddPct": 2.2,
+     "distChangePct": -8.3,
+     "climbChangePct": -15.3,
+     "routesChangedPct": 46
+    },
+    "12": {
+     "gPerKmFast": 238.6,
+     "co2SavePct": 9.1,
+     "timeAddPct": 4.6,
+     "distChangePct": -11.1,
+     "climbChangePct": -20.3,
+     "routesChangedPct": 57
+    },
+    "24": {
+     "gPerKmFast": 238.6,
+     "co2SavePct": 10.2,
+     "timeAddPct": 7.2,
+     "distChangePct": -12.9,
+     "climbChangePct": -23.5,
+     "routesChangedPct": 64
+    }
+   }
+  },
+  {
+   "id": "jogger_lpg",
+   "name": "Dacia Jogger 1.0 TCe ECO-G 100 LPG (2022-)",
+   "pt": "lpg",
+   "byLambda": {
+    "2": {
+     "gPerKmFast": 203.1,
+     "co2SavePct": 3.4,
+     "timeAddPct": 0.4,
+     "distChangePct": -3.3,
+     "climbChangePct": -7.3,
+     "routesChangedPct": 24
+    },
+    "6": {
+     "gPerKmFast": 203.1,
+     "co2SavePct": 6.8,
+     "timeAddPct": 1.9,
+     "distChangePct": -7.7,
+     "climbChangePct": -14.3,
+     "routesChangedPct": 43
+    },
+    "12": {
+     "gPerKmFast": 203.1,
+     "co2SavePct": 9,
+     "timeAddPct": 4.2,
+     "distChangePct": -10.7,
+     "climbChangePct": -19.5,
+     "routesChangedPct": 55
+    },
+    "24": {
+     "gPerKmFast": 203.1,
+     "co2SavePct": 10.1,
+     "timeAddPct": 6.6,
+     "distChangePct": -12.6,
+     "climbChangePct": -22.4,
+     "routesChangedPct": 63
+    }
+   }
+  }
+ ]
+}

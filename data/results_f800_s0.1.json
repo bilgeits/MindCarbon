@@ -1,0 +1,53 @@
+{
+ "fleet": 800,
+ "sample": 0.1,
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "results": {
+  "nearest": {
+   "served": 3484,
+   "expired": 271,
+   "serviceRate": 0.9278178753251942,
+   "waitMeanMin": 5.496053860263989,
+   "waitP95Min": 9.557777777777774,
+   "emptyShare": 0.18239593815142222,
+   "co2kg": 2878.9397336325123,
+   "co2PerTripG": 826.2682295538574,
+   "tripsPerVehCV": 0.7235815905167993,
+   "matchMs": 137.7472999999999,
+   "evShare": 0.20073442729580285,
+   "requests": 3781
+  },
+  "batch_eta": {
+   "served": 3466.6666666666665,
+   "expired": 290,
+   "serviceRate": 0.9227978213927582,
+   "waitMeanMin": 5.33709040839515,
+   "waitP95Min": 9.37361111111111,
+   "emptyShare": 0.18176387001425778,
+   "co2kg": 2863.2244245623056,
+   "co2PerTripG": 825.8168292179521,
+   "tripsPerVehCV": 0.7000759194841762,
+   "matchMs": 413.57543333333297,
+   "evShare": 0.2016923267768799,
+   "requests": 3781
+  },
+  "green": {
+   "served": 3503.3333333333335,
+   "expired": 257,
+   "serviceRate": 0.931653252644065,
+   "waitMeanMin": 5.49364762576143,
+   "waitP95Min": 9.483333333333333,
+   "emptyShare": 0.18885819978479138,
+   "co2kg": 2206.4996899249923,
+   "co2PerTripG": 629.7800695973184,
+   "tripsPerVehCV": 0.7193716051243745,
+   "matchMs": 340.4497666666694,
+   "evShare": 0.3805531054463711,
+   "requests": 3781
+  }
+ }
+}

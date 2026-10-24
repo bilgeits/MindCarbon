@@ -1,0 +1,33 @@
+{
+ "detour": 1.049,
+ "timeFactor": [
+  0.951,
+  1.021,
+  1.089,
+  1.156,
+  1.038
+ ],
+ "overheadS": 120,
+ "validation": {
+  "trips_candidate": 17410,
+  "trips_fit": 8705,
+  "trips_test": 8705,
+  "eta_graph": {
+   "MAPE": 25.3,
+   "medianAPE": 19.2,
+   "bias": -6.9
+  },
+  "eta_naive_straightline": {
+   "MAPE": 36.7,
+   "medianAPE": 28.4,
+   "bias": 1.3
+  },
+  "distance_graph": {
+   "MAPE": 18.5,
+   "medianAPE": 12.6
+  },
+  "median_actual_min": 10.5,
+  "median_gps_km": 4.02
+ },
+ "note": "detour: GPS yol uzunluğu / hücre merkezleri arası rota uzunluğu (medyan). timeFactor: gerçek süre / graf süresi (medyan), saat dilimi başına; GPS hızlarına girmeyen duraklamaları (ışık, kavşak) karşılar."
+}

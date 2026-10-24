@@ -1,0 +1,159 @@
+{
+ "note": "15 araç modeli. wltp: yakıtlılar için g CO2/km (WLTP birleşik, egzoz), elektrikliler için Wh/km (WLTP, şebekeden, şarj kaybı dahil). Aralık verilen değerlerde orta nokta alındı. mass_kg: boş ağırlık (kaynağa göre sürücülü/sürücüsüz). body: aerodinamik sınıf (CdA varsayımı için). Gerçek kullanım düzeltmesi uygulanmaz: değerler resmi WLTP testidir.",
+ "factors": {
+  "real_world_gap": {
+   "petrol": 0,
+   "diesel": 0,
+   "lpg": 0,
+   "hev": 0,
+   "ev": 0
+  },
+  "real_world_gap_source": "Kullanılmıyor: bütün araçlar resmi WLTP test değerleriyle hesaplanır (tahmini düzeltme yok). Bilgi için: Avrupa Komisyonu OBFCM 2022 verisinde gerçek kullanım farkı benzinli %21,1, dizel %17,1; hibrit, LPG ve elektrikli için resmi ayrı değer yayımlanmıyor.",
+  "wtt_ratio": {
+   "petrol": 0.28,
+   "diesel": 0.237,
+   "lpg": 0.119,
+   "hev": 0.28
+  },
+  "wtt_source": "UK DESNZ/DEFRA dönüşüm faktörleri (2025/2026): kuyudan-tanka / yanma oranı. Benzin 0,581/2,075; dizel 0,611/2,584; LPG 0,186/1,557 kg CO2e/L.",
+  "grid_g_per_kwh": 117.2,
+  "grid_source": "Electricity Maps, Portekiz 2025 ortalama şebeke karbon yoğunluğu (akış izlemeli, ithalat dahil): 117,2 g CO2e/kWh (2024: 100,2)."
+ },
+ "vehicles": [
+  {
+   "id": "tesla_m3",
+   "name": "Tesla Model 3 RWD (2023-)",
+   "pt": "ev",
+   "wltp": 132,
+   "mass_kg": 1836,
+   "body": "sedan",
+   "src": "https://ev-database.org/car/1991/Tesla-Model-3"
+  },
+  {
+   "id": "kia_niro_ev",
+   "name": "Kia Niro EV 64,8 kWh (2022-)",
+   "pt": "ev",
+   "wltp": 162,
+   "mass_kg": 1757,
+   "body": "crossover",
+   "src": "https://ev-database.org/imp/car/1666/Kia-Niro-EV"
+  },
+  {
+   "id": "ioniq5_58",
+   "name": "Hyundai IONIQ 5 58 kWh RWD (2021-24)",
+   "pt": "ev",
+   "wltp": 165,
+   "mass_kg": 1905,
+   "body": "suv",
+   "src": "https://ev-database.org/de/pkw/1476/Hyundai-IONIQ-5-58-kWh-"
+  },
+  {
+   "id": "vw_id4",
+   "name": "Volkswagen ID.4 Pro (2023-25)",
+   "pt": "ev",
+   "wltp": 170.5,
+   "mass_kg": 2144,
+   "body": "suv",
+   "src": "https://ev-database.org/imp/car/2028/Volkswagen-ID4-Pro"
+  },
+  {
+   "id": "leaf_40",
+   "name": "Nissan LEAF 40 kWh (2022-24)",
+   "pt": "ev",
+   "wltp": 168.5,
+   "mass_kg": 1580,
+   "body": "hatch",
+   "src": "https://ev-database.org/car/1656/Nissan-LEAF-40-kWh"
+  },
+  {
+   "id": "corolla_ts",
+   "name": "Toyota Corolla Touring Sports 1.8 Hybrid 140 (2023)",
+   "pt": "hev",
+   "wltp": 103,
+   "mass_kg": 1400,
+   "body": "estate",
+   "src": "https://www.auto-selection.com/fiche-technique/toyota/corolla-touring-spt/2023/18-140ch-active-my24-2796954"
+  },
+  {
+   "id": "niro_hev",
+   "name": "Kia Niro 1.6 GDi Hybrid 141 (2022)",
+   "pt": "hev",
+   "wltp": 100,
+   "mass_kg": 1474,
+   "body": "crossover",
+   "src": "https://www.fiches-auto.fr/fiches-techniques/hybrides/f-222-kia-niro-2-hev-141-ch.php"
+  },
+  {
+   "id": "chr_hev",
+   "name": "Toyota C-HR 1.8 Hybrid 140 (2023-)",
+   "pt": "hev",
+   "wltp": 108,
+   "mass_kg": 1430,
+   "body": "crossover",
+   "src": "https://www.ultimatespecs.com/car-specs/Toyota/137260/Toyota-C-HR-II-18-Hybrid.html ; ağırlık: fiches-auto.fr"
+  },
+  {
+   "id": "rav4_hev",
+   "name": "Toyota RAV4 2.5 Hybrid 2WD 218 (2022)",
+   "pt": "hev",
+   "wltp": 128.5,
+   "mass_kg": 1635,
+   "body": "suv",
+   "src": "https://media.toyota.co.uk/wp-content/uploads/sites/5/pdf/220203M-RAV4-Tech-Spec.pdf"
+  },
+  {
+   "id": "e220d",
+   "name": "Mercedes-Benz E 220 d (W214, 2024-)",
+   "pt": "diesel",
+   "wltp": 125,
+   "mass_kg": 1850,
+   "body": "sedan",
+   "src": "https://www.encycarpedia.com/es/mercedes/24-e-220-d-berlina"
+  },
+  {
+   "id": "octavia_tdi",
+   "name": "Skoda Octavia Combi 2.0 TDI 115 (2024-)",
+   "pt": "diesel",
+   "wltp": 119,
+   "mass_kg": 1467,
+   "body": "estate",
+   "src": "https://www.auto-data.net/en/skoda-octavia-iv-combi-facelift-2024-2.0-tdi-115hp-52155"
+  },
+  {
+   "id": "p508_hdi",
+   "name": "Peugeot 508 SW 1.5 BlueHDi 130 EAT8 (2023-)",
+   "pt": "diesel",
+   "wltp": 137.5,
+   "mass_kg": 1513,
+   "body": "estate",
+   "src": "https://www.auto-data.net/en/peugeot-508-ii-sw-phase-ii-2023-1.5-bluehdi-130hp-eat8-47834"
+  },
+  {
+   "id": "octavia_tsi",
+   "name": "Skoda Octavia 1.5 TSI 150 (2024-)",
+   "pt": "petrol",
+   "wltp": 125.5,
+   "mass_kg": 1353,
+   "body": "sedan",
+   "src": "https://cdn.skoda-storyboard.com/2024/05/Octavia_technical_data_EN_842ba18d.pdf (Škoda resmi teknik veri: WLTP 119-132 g/km, boş ağırlık sürücü dahil 1353-1511 kg; en düşük değer alındı)"
+  },
+  {
+   "id": "logan_tce",
+   "name": "Dacia Logan 1.0 TCe 90 (2022-)",
+   "pt": "petrol",
+   "wltp": 120,
+   "mass_kg": 1107,
+   "body": "sedan",
+   "src": "https://www.auto-data.net/en/dacia-logan-iii-facelift-2022-1.0-tce-90hp-manual-5-speed-46785"
+  },
+  {
+   "id": "jogger_lpg",
+   "name": "Dacia Jogger 1.0 TCe ECO-G 100 LPG (2022-)",
+   "pt": "lpg",
+   "wltp": 119,
+   "mass_kg": 1223,
+   "body": "mpv",
+   "src": "https://www.auto-data.net/en/dacia-jogger-facelift-2022-1.0-tce-eco-g-100-91-101hp-lpg-46766"
+  }
+ ]
+}

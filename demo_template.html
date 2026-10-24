@@ -1,0 +1,392 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GreenMatch Manhattan Demo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&display=swap">
+<style>
+/* Layout: dispatch console - harita solda, kontrol ve canlı metrikler sağda, aylık veri özeti altta */
+:root {
+  --bg: #f3f5f4; --panel: #ffffff; --fg: #18211d; --muted: #5b6862; --line: #d9dfdc;
+  --zone: #e4eae7; --zone-edge: #ffffff; --heat: #d9482b;
+  --ice: #c7791a; --hybrid: #6b5bd2; --ev: #138a6e; --accent: #138a6e;
+  --good: #1b7f4d; --warn: #b26a00;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111614; --panel: #18201d; --fg: #e3ebe7; --muted: #94a39c; --line: #2a3531;
+  --zone: #23302b; --zone-edge: #111614; --heat: #ff6a4a;
+  --ice: #f0a040; --hybrid: #9d8ff5; --ev: #3fd0a8; --accent: #3fd0a8;
+  --good: #4cc98a; --warn: #f0b040; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #111614; --panel: #18201d; --fg: #e3ebe7; --muted: #94a39c; --line: #2a3531;
+  --zone: #23302b; --zone-edge: #111614; --heat: #ff6a4a;
+  --ice: #f0a040; --hybrid: #9d8ff5; --ev: #3fd0a8; --accent: #3fd0a8;
+  --good: #4cc98a; --warn: #f0b040; color-scheme: dark }
+
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 14px; line-height: 1.5; }
+.wrap { max-width: 1280px; margin: 0 auto; padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 20px; }
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+h1 { font-family: var(--font-display); font-size: 28px; line-height: 1.1; margin: 0; letter-spacing: .01em; text-wrap: balance; }
+h2 { font-family: var(--font-display); font-size: 17px; margin: 0; letter-spacing: .02em; }
+.sub { color: var(--muted); margin: 4px 0 0; max-width: 70ch; }
+.clock { font-family: var(--font-mono); font-size: 32px; font-variant-numeric: tabular-nums; line-height: 1; }
+.clock small { display: block; font-size: 11px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 20px; align-items: start; }
+@media (max-width: 900px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.mapbox { position: relative; }
+#map { width: 100%; height: auto; max-height: 78vh; display: block; }
+#map path.z { fill: var(--zone); stroke: var(--zone-edge); stroke-width: .8; }
+#map path.z:hover { stroke: var(--fg); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.ctrl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+.ctrl label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+.ctrl label.full { grid-column: 1 / -1; }
+.ctrl output { font-family: var(--font-mono); color: var(--fg); }
+select, input[type=range] { width: 100%; accent-color: var(--accent); }
+select { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+button { font: inherit; font-weight: 500; border-radius: 4px; padding: 7px 14px; cursor: pointer; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.kpi { display: grid; gap: 2px; }
+.kpi span { font-size: 11px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.kpi b { font-family: var(--font-mono); font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--line); }
+.bar div { height: 100%; }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 5px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-weight: 500; color: var(--muted); font-size: 12px; }
+td.best { color: var(--good); font-weight: 600; }
+.log { font-family: var(--font-mono); font-size: 11.5px; max-height: 180px; overflow-y: auto; display: grid; gap: 2px; color: var(--muted); }
+.log div b { color: var(--fg); font-weight: 500; }
+.note { font-size: 12px; color: var(--muted); margin: 0; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 20px; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--font-mono); font-size: 10px; }
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; font-size: 13px; }
+.facts dt { color: var(--muted); } .facts dd { margin: 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 4px 8px; font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>GreenMatch · Manhattan bölge simülasyonu</h1>
+      <p class="sub">NYC TLC High Volume FHV, 15 Ekim 2025 Çarşamba 07:00–11:00 arasındaki gerçek talepler (request_datetime). Filo, araç türleri ve emisyon faktörleri demo varsayımıdır.</p>
+    </div>
+    <div class="clock"><small>Simülasyon saati</small><span id="clock">07:00:00</span></div>
+  </header>
+
+  <div class="main">
+    <section class="panel mapbox">
+      <svg id="map" role="img" aria-label="Manhattan taksi bölgeleri ve araçlar"></svg>
+      <div class="legend">
+        <span><i style="background:var(--ice)"></i>Benzinli</span>
+        <span><i style="background:var(--hybrid)"></i>Hibrit</span>
+        <span><i style="background:var(--ev)"></i>Elektrikli</span>
+        <span>Soluk nokta: boş · halkalı: yolcuya gidiyor · dolu: yolcu taşıyor</span>
+        <span><i style="background:var(--heat)"></i>Bölge rengi: bekleyen talep</span>
+      </div>
+      <div class="tip" id="tip" hidden></div>
+    </section>
+
+    <div style="display:grid; gap:20px; min-width:0">
+      <section class="panel">
+        <h2>Senaryo</h2>
+        <div class="ctrl">
+          <label class="full" for="algo">Eşleştirme yöntemi
+            <select id="algo">
+              <option value="nearest">En yakın araç (geliş sırasıyla)</option>
+              <option value="batch_eta">Toplu ETA (30 sn, Macar algoritması)</option>
+              <option value="green" selected>GreenMatch (bekleme + λ·emisyon)</option>
+            </select>
+          </label>
+          <label for="fleet">Araç sayısı <output id="fleetO"></output><input id="fleet" type="range" min="100" max="1200" step="50" value="500"></label>
+          <label for="sample">Talep örneklemi <output id="sampleO"></output><input id="sample" type="range" min="2" max="30" step="1" value="10"></label>
+          <label for="ev">Elektrikli oranı <output id="evO"></output><input id="ev" type="range" min="0" max="80" step="5" value="20"></label>
+          <label for="lambda">λ (dk / kg CO₂e) <output id="lambdaO"></output><input id="lambda" type="range" min="0" max="20" step="1" value="6"></label>
+          <label class="full" for="speed">Hız <output id="speedO"></output><input id="speed" type="range" min="10" max="600" step="10" value="120"></label>
+        </div>
+        <div class="btns">
+          <button class="primary" id="play">Başlat</button>
+          <button id="reset">Sıfırla</button>
+          <button id="compare">Üç yöntemi karşılaştır</button>
+        </div>
+        <p class="note">Benzinli/hibrit oranı kalan filoyu eşit böler. Ayar değişince simülasyon baştan kurulur.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Canlı göstergeler</h2>
+        <div class="kpis">
+          <div class="kpi"><span>Talep</span><b id="kReq">0</b></div>
+          <div class="kpi"><span>Karşılanan</span><b id="kServed">0</b></div>
+          <div class="kpi"><span>İptal (10 dk)</span><b id="kExp">0</b></div>
+          <div class="kpi"><span>Ort. bekleme</span><b id="kWait">–</b></div>
+          <div class="kpi"><span>p95 bekleme</span><b id="kP95">–</b></div>
+          <div class="kpi"><span>Boş km payı</span><b id="kEmpty">–</b></div>
+          <div class="kpi"><span>Toplam CO₂e</span><b id="kCo2">0</b></div>
+          <div class="kpi"><span>Sefer başına</span><b id="kCo2T">–</b></div>
+          <div class="kpi"><span>Meşgul araç</span><b id="kBusy">0</b></div>
+        </div>
+        <div>
+          <p class="note" style="margin-bottom:4px">Seferlerin araç türüne göre dağılımı</p>
+          <div class="bar" id="mixBar"></div>
+        </div>
+        <div class="log" id="log" aria-live="off"></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="panel">
+    <h2>Yöntem karşılaştırması</h2>
+    <p class="note" id="cmpNote">“Üç yöntemi karşılaştır” aynı talep örneklemi ve aynı filoyla üç yöntemi baştan sona çalıştırır (3 farklı rastgele tohum ortalaması). Aşağıdaki değerler 500 araç, %10 örneklem, %20 elektrikli varsayılanıyla önceden hesaplandı.</p>
+    <div class="tbl"><table id="cmp"></table></div>
+  </section>
+
+  <div class="grid2">
+    <section class="panel chart">
+      <h2>Ekim 2025 günlük talep (tüm NYC)</h2>
+      <svg id="daily" viewBox="0 0 420 170"></svg>
+    </section>
+    <section class="panel chart">
+      <h2>Saatlik ortalama talep</h2>
+      <svg id="hourly" viewBox="0 0 420 170"></svg>
+      <div class="legend"><span><i style="background:var(--accent)"></i>Hafta içi</span><span><i style="background:var(--muted)"></i>Hafta sonu</span></div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>Veri hazırlama özeti</h2>
+    <dl class="facts" id="facts"></dl>
+  </section>
+</div>
+
+<script>/*__SIM_JS__*/</script>
+<script>const DATA = /*__DATA__*/;</script>
+<script>
+const $ = id => document.getElementById(id);
+const NS = 'http://www.w3.org/2000/svg';
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = (x, d = 0) => Number.isFinite(x) ? x.toLocaleString('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d }) : '–';
+const TYPE_TR = { ice: 'benzinli', hybrid: 'hibrit', ev: 'elektrikli' };
+const ALGO_TR = { nearest: 'En yakın araç', batch_eta: 'Toplu ETA', green: 'GreenMatch' };
+
+// ---------------------------------------------------------------- harita
+const map = $('map');
+const [W, H] = DATA.meta.svg;
+map.setAttribute('viewBox', `-10 -10 ${W + 20} ${H + 20}`);
+const zoneIdx = new Map(DATA.od.ids.map((id, i) => [id, i]));
+const zoneEls = [], centers = [];
+for (const z of DATA.zones) {
+  const p = document.createElementNS(NS, 'path');
+  p.setAttribute('d', z.path); p.setAttribute('class', 'z');
+  p.dataset.name = z.name; p.dataset.id = z.id;
+  map.appendChild(p);
+  zoneEls[zoneIdx.get(z.id)] = p; centers[zoneIdx.get(z.id)] = [z.cx, z.cy];
+}
+const vehLayer = document.createElementNS(NS, 'g'); map.appendChild(vehLayer);
+const tip = $('tip');
+map.addEventListener('mousemove', e => {
+  const t = e.target;
+  if (t.classList && t.classList.contains('z')) {
+    const q = sim ? sim.queue.filter(r => r.pu === zoneIdx.get(+t.dataset.id)).length : 0;
+    tip.textContent = `${t.dataset.name} (#${t.dataset.id}) · bekleyen: ${q}`;
+    const box = map.parentElement.getBoundingClientRect();
+    tip.style.left = (e.clientX - box.left + 12) + 'px'; tip.style.top = (e.clientY - box.top + 12) + 'px';
+    tip.hidden = false;
+  } else tip.hidden = true;
+});
+map.addEventListener('mouseleave', () => tip.hidden = true);
+
+// ---------------------------------------------------------------- simülasyon
+let sim, vehEls = [], playing = false, simT = 0, lastFrame = 0;
+function cfg(algo) {
+  const ev = +$('ev').value / 100;
+  return { algo: algo || $('algo').value, fleet: +$('fleet').value, sample: +$('sample').value / 100, seed: 1,
+           mix: { ev, ice: (1 - ev) / 2, hybrid: (1 - ev) / 2 }, lambdaMinPerKg: +$('lambda').value };
+}
+function build() {
+  sim = GreenSim.createSim(DATA, cfg());
+  simT = 0; vehLayer.replaceChildren();
+  vehEls = sim.vehicles.map(v => {
+    const c = document.createElementNS(NS, 'circle');
+    c.setAttribute('r', 4); vehLayer.appendChild(c); return c;
+  });
+  $('log').replaceChildren();
+  draw(); updateKpis();
+}
+function pos(v, t) {
+  const a = centers[v.legFrom], b = centers[v.legTo];
+  if (v.state === 'idle' || v.legEnd <= v.legStart) return [a[0] + v.jx, a[1] + v.jy];
+  const f = Math.min(1, Math.max(0, (t - v.legStart) / (v.legEnd - v.legStart)));
+  return [a[0] + (b[0] - a[0]) * f + v.jx, a[1] + (b[1] - a[1]) * f + v.jy];
+}
+function draw() {
+  const colors = { ice: css('--ice'), hybrid: css('--hybrid'), ev: css('--ev') };
+  const bg = css('--panel');
+  sim.vehicles.forEach((v, i) => {
+    const [x, y] = pos(v, simT), c = vehEls[i];
+    c.setAttribute('cx', x.toFixed(1)); c.setAttribute('cy', y.toFixed(1));
+    const col = colors[v.type];
+    if (v.state === 'pickup') { c.setAttribute('fill', bg); c.setAttribute('stroke', col); c.setAttribute('stroke-width', 2); c.setAttribute('opacity', 1); }
+    else { c.setAttribute('fill', col); c.setAttribute('stroke', 'none'); c.setAttribute('opacity', v.state === 'trip' ? 1 : v.state === 'reposition' ? .7 : .35); }
+  });
+  const q = new Array(centers.length).fill(0);
+  for (const r of sim.queue) q[r.pu]++;
+  const heat = css('--heat');
+  zoneEls.forEach((el, i) => { el.style.fill = q[i] ? `color-mix(in srgb, ${heat} ${Math.min(85, 20 + q[i] * 15)}%, var(--zone))` : ''; });
+  const s = Math.floor(simT), h = 7 + Math.floor(s / 3600);
+  $('clock').textContent = `${String(h).padStart(2, '0')}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+}
+let lastLog = 0;
+function updateKpis() {
+  const m = sim.metrics();
+  $('kReq').textContent = fmt(m.requests); $('kServed').textContent = fmt(m.served); $('kExp').textContent = fmt(m.expired);
+  $('kWait').textContent = Number.isFinite(m.waitMeanMin) ? fmt(m.waitMeanMin, 1) + ' dk' : '–';
+  $('kP95').textContent = Number.isFinite(m.waitP95Min) ? fmt(m.waitP95Min, 1) + ' dk' : '–';
+  $('kEmpty').textContent = m.served ? '%' + fmt(m.emptyShare * 100) : '–';
+  $('kCo2').textContent = fmt(m.co2kg) + ' kg'; $('kCo2T').textContent = m.served ? fmt(m.co2PerTripG) + ' g' : '–';
+  $('kBusy').textContent = `${m.busyVehicles}/${sim.vehicles.length}`;
+  const tot = m.served || 1;
+  $('mixBar').innerHTML = ['ice', 'hybrid', 'ev'].map(k => `<div title="${TYPE_TR[k]}: ${m.byType[k].trips}" style="width:${m.byType[k].trips / tot * 100}%;background:var(--${k})"></div>`).join('');
+  const log = $('log');
+  const fresh = sim.log.filter(e => e.t > lastLog).slice(-6);
+  for (const e of fresh) {
+    const d = document.createElement('div'); const s = e.t, h = 7 + Math.floor(s / 3600);
+    d.innerHTML = `${String(h).padStart(2, '0')}:${String(Math.floor(s / 60) % 60).padStart(2, '0')} talep #${e.req} → <b>araç ${e.veh}</b> (${TYPE_TR[e.type]}) ETA ${fmt(e.eta / 60, 1)} dk, ${fmt(e.co2g)} g`;
+    log.prepend(d);
+  }
+  while (log.children.length > 40) log.lastChild.remove();
+  if (sim.log.length) lastLog = sim.log[sim.log.length - 1].t;
+}
+function frame(ts) {
+  if (!playing) return;
+  const dt = lastFrame ? Math.min(0.1, (ts - lastFrame) / 1000) : 0; lastFrame = ts;
+  simT = Math.min(sim.endT, simT + dt * +$('speed').value);
+  sim.advanceTo(simT); draw();
+  if (Math.floor(ts / 250) !== Math.floor((ts - dt * 1000) / 250)) updateKpis();
+  if (simT >= sim.endT) { playing = false; $('play').textContent = 'Bitti'; updateKpis(); return; }
+  requestAnimationFrame(frame);
+}
+$('play').onclick = () => {
+  if (simT >= sim.endT) build();
+  playing = !playing; $('play').textContent = playing ? 'Duraklat' : 'Devam';
+  lastFrame = 0; if (playing) requestAnimationFrame(frame);
+};
+$('reset').onclick = () => { playing = false; $('play').textContent = 'Başlat'; lastLog = 0; build(); };
+const outs = { fleet: v => v, sample: v => '%' + v, ev: v => '%' + v, lambda: v => v, speed: v => v + '× gerçek zaman' };
+for (const id of Object.keys(outs)) {
+  const upd = () => $(id + 'O').textContent = outs[id]($(id).value);
+  $(id).addEventListener('input', upd); upd();
+  if (id !== 'speed') $(id).addEventListener('change', () => $('reset').onclick());
+}
+$('algo').addEventListener('change', () => $('reset').onclick());
+
+// ---------------------------------------------------------------- karşılaştırma
+const ROWS = [
+  ['Karşılanan talep', m => fmt(m.served), m => m.served, 'max'],
+  ['İptal (10 dk aşımı)', m => fmt(m.expired), m => m.expired, 'min'],
+  ['Hizmet oranı', m => '%' + fmt(m.serviceRate * 100, 1), m => m.serviceRate, 'max'],
+  ['Ortalama bekleme (dk)', m => fmt(m.waitMeanMin, 2), m => m.waitMeanMin, 'min'],
+  ['p95 bekleme (dk)', m => fmt(m.waitP95Min, 2), m => m.waitP95Min, 'min'],
+  ['Boş km payı', m => '%' + fmt(m.emptyShare * 100, 1), m => m.emptyShare, 'min'],
+  ['Toplam CO₂e (kg)', m => fmt(m.co2kg), m => m.co2kg, 'min'],
+  ['Sefer başına CO₂e (g)', m => fmt(m.co2PerTripG), m => m.co2PerTripG, 'min'],
+  ['Elektrikli araç sefer payı', m => '%' + fmt(m.evShare * 100, 1), m => m.evShare, null],
+  ['Araç başı sefer değişim kats.', m => fmt(m.tripsPerVehCV, 2), m => m.tripsPerVehCV, 'min'],
+  ['Eşleştirme hesap süresi (ms)', m => fmt(m.matchMs), m => m.matchMs, 'min'],
+];
+function renderCmp(res) {
+  const algos = ['nearest', 'batch_eta', 'green'];
+  let h = '<thead><tr><th>Gösterge</th>' + algos.map(a => `<th>${ALGO_TR[a]}</th>`).join('') + '</tr></thead><tbody>';
+  for (const [name, show, val, dir] of ROWS) {
+    const vs = algos.map(a => val(res[a]));
+    const best = dir ? (dir === 'max' ? Math.max(...vs) : Math.min(...vs)) : null;
+    h += `<tr><td>${name}</td>` + algos.map((a, i) => `<td class="${vs[i] === best ? 'best' : ''}">${show(res[a])}</td>`).join('') + '</tr>';
+  }
+  $('cmp').innerHTML = h + '</tbody>';
+}
+function runCompare() {
+  const res = {};
+  for (const algo of ['nearest', 'batch_eta', 'green']) {
+    const runs = [1, 2, 3].map(seed => GreenSim.createSim(DATA, Object.assign(cfg(algo), { seed })).runAll());
+    const avg = {};
+    for (const k of Object.keys(runs[0])) if (typeof runs[0][k] === 'number') avg[k] = runs.reduce((a, r) => a + r[k], 0) / runs.length;
+    avg.evShare = runs.reduce((a, r) => a + r.byType.ev.trips / r.served, 0) / runs.length;
+    res[algo] = avg;
+  }
+  return res;
+}
+$('compare').onclick = () => {
+  $('compare').disabled = true; $('compare').textContent = 'Hesaplanıyor…';
+  setTimeout(() => {
+    const c = cfg(), res = runCompare();
+    renderCmp(res);
+    const d = (res.green.co2PerTripG / res.batch_eta.co2PerTripG - 1) * 100;
+    $('cmpNote').textContent = `${c.fleet} araç, %${Math.round(c.sample * 100)} örneklem, %${Math.round(c.mix.ev * 100)} elektrikli, λ=${c.lambdaMinPerKg}; 3 tohum ortalaması. GreenMatch sefer başına CO₂e'yi Toplu ETA'ya göre %${fmt(Math.abs(d), 1)} ${d < 0 ? 'azalttı' : 'artırdı'}.`;
+    $('compare').disabled = false; $('compare').textContent = 'Üç yöntemi karşılaştır';
+  }, 30);
+};
+
+// ---------------------------------------------------------------- aylık grafikler
+function axisY(svg, max, x0, y0, h, w) {
+  for (let i = 0; i <= 4; i++) {
+    const v = max * i / 4, y = y0 - h * i / 4;
+    svg.insertAdjacentHTML('beforeend', `<line x1="${x0}" x2="${x0 + w}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${x0 - 4}" y="${y + 3}" text-anchor="end">${fmt(v / 1000)}k</text>`);
+  }
+}
+(function daily() {
+  const svg = $('daily'), d = DATA.daily, x0 = 40, y0 = 145, w = 370, h = 130;
+  const max = Math.ceil(Math.max(...d) / 100000) * 100000;
+  axisY(svg, max, x0, y0, h, w);
+  const bw = w / d.length;
+  d.forEach((v, i) => {
+    const dow = new Date(Date.UTC(2025, 9, i + 1)).getUTCDay(), we = dow === 0 || dow === 6;
+    const bh = v / max * h, hl = i === 14;
+    svg.insertAdjacentHTML('beforeend', `<rect x="${x0 + i * bw + 1}" y="${y0 - bh}" width="${bw - 2}" height="${bh}" fill="${hl ? 'var(--heat)' : we ? 'var(--muted)' : 'var(--accent)'}"><title>${i + 1} Ekim: ${fmt(v)} yolculuk</title></rect>`);
+    if ((i + 1) % 5 === 0 || i === 0) svg.insertAdjacentHTML('beforeend', `<text x="${x0 + i * bw + bw / 2}" y="${y0 + 14}" text-anchor="middle">${i + 1}</text>`);
+  });
+  svg.insertAdjacentHTML('beforeend', `<text x="${x0 + 14 * bw + bw / 2}" y="${y0 - d[14] / max * h - 4}" text-anchor="middle" style="fill:var(--heat)">sim. günü</text>`);
+})();
+(function hourly() {
+  const svg = $('hourly'), a = DATA.hourly_weekday_avg, b = DATA.hourly_weekend_avg, x0 = 40, y0 = 145, w = 370, h = 130;
+  const max = Math.ceil(Math.max(...a, ...b) / 10000) * 10000;
+  const [ws, we] = DATA.meta.window;
+  svg.insertAdjacentHTML('beforeend', `<rect x="${x0 + ws / 23 * w}" y="${y0 - h}" width="${(we - ws) / 23 * w}" height="${h}" fill="var(--heat)" opacity=".12"/>`);
+  axisY(svg, max, x0, y0, h, w);
+  const line = (arr, col) => `<polyline fill="none" stroke="${col}" stroke-width="2" points="${arr.map((v, i) => `${x0 + i / 23 * w},${y0 - v / max * h}`).join(' ')}"/>`;
+  svg.insertAdjacentHTML('beforeend', line(b, 'var(--muted)') + line(a, 'var(--accent)'));
+  for (let i = 0; i < 24; i += 3) svg.insertAdjacentHTML('beforeend', `<text x="${x0 + i / 23 * w}" y="${y0 + 14}" text-anchor="middle">${String(i).padStart(2, '0')}</text>`);
+})();
+(function facts() {
+  const q = DATA.quality, m = DATA.meta;
+  const rows = [
+    ['Ham kayıt (Ekim 2025)', fmt(q.total)],
+    ['Paylaşımlı yolculuk (çıkarıldı)', fmt(q.shared)],
+    ['Bilinmeyen bölge 264/265 (çıkarıldı)', fmt(q.unknown_zone)],
+    ['Geçersiz süre / mesafe (çıkarıldı)', `${fmt(q.bad_time)} / ${fmt(q.bad_miles)}`],
+    ['Kalan temiz kayıt', fmt(q.kept)],
+    ['Şirket dağılımı', Object.entries(DATA.company).map(([k, v]) => `${k === 'HV0003' ? 'Uber' : k === 'HV0005' ? 'Lyft' : k} ${fmt(v / q.kept * 100, 1)}%`).join(' · ')],
+    ['Simülasyon günü talebi (Manhattan içi, 07–11)', fmt(DATA.requests.length)],
+    ['Süre matrisi için kullanılan yolculuk', fmt(m.od_trips_used) + ' (hafta içi 07–11, 15 Ekim hariç)'],
+    ['Veriden gelen bölge çifti', `${fmt(m.od_pairs_observed)} / ${fmt(m.od_pairs_total)}`],
+    ['Ortalama dolu yolculuk hızı', fmt(m.avg_speed_mph * 1.609, 1) + ' km/sa'],
+    ['Gerçek “istek → araç geldi” süresi', `medyan ${fmt(m.real_wait_median_s / 60, 1)} dk · p95 ${fmt(m.real_wait_p95_s / 60, 1)} dk`],
+  ];
+  $('facts').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+})();
+
+renderCmp(/*__PRECOMPUTED__*/);
+build();
+</script>
