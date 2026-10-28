@@ -1,0 +1,17 @@
+faktor,tur,arac_tipi,etki_min_yuzde,etki_max_yuzde,kosul,kaynak,sayfa_tablo,olculu_mu,yazan
+bos_km,A,tum,52,52,Istanbul taksi km'sinin yolcusuz payi,AA 2026 / ITEO baskani beyani,-,beyan,ilk_liste
+surus_stili_sert,A,petrol,10,40,dur-kalk trafik,fueleconomy.gov driveHabits (Thomas vd. 2017),-,evet,ilk_liste
+surus_stili_sert,A,petrol,15,30,otoyol hizlari,fueleconomy.gov driveHabits (Thomas vd. 2017),-,evet,ilk_liste
+sicaklik_soguk,Z,petrol,10,20,-7C (20F) vs 25C sehir ici,fueleconomy.gov coldweather (ORNL),-,evet,ilk_liste
+sicaklik_soguk,Z,hev,20,40,-7C (20F) vs 25C sehir ici,fueleconomy.gov coldweather (ORNL),-,evet,ilk_liste
+sicaklik_soguk,Z,ev,39,39,-7C karisik surus; kabin isitma acik (tuketim artisi),fueleconomy.gov coldweather (AAA 2019),-,evet,ilk_liste
+klima_sicak,Z,petrol,25,,cok sicak; kisa yolculuk ('%25ten fazla'),fueleconomy.gov hotweather (Huff vd. 2013),-,evet,ilk_liste
+egim_yokus,R,lpg,60,60,dik yokus vs duz yol (yakit 1.6 kat),Papadopoulos vd. 2018,kontrol edilecek,evet,ilk_liste
+yas_km,A,petrol,10,10,ayni arac 18 bin -> 165 bin km; RDE (197 -> 217 g/km),Pielecha & Pryciński 2025,kontrol edilecek,evet,ilk_liste
+gercek_yol_farki,A,petrol,19.8,21.1,WLTP'ye gore; 2021-2022 kayitli araclar,AB Komisyonu OBFCM 2024,-,evet,ilk_liste
+gercek_yol_farki,A,diesel,17.1,18.2,WLTP'ye gore; 2021-2022 kayitli araclar,AB Komisyonu OBFCM 2024,-,evet,ilk_liste
+gercek_yol_farki,A,phev,249,314,WLTP'ye gore; 2021-2022 kayitli araclar,AB Komisyonu OBFCM 2024,-,evet,ilk_liste
+lastik_basinci,A,tum,0.2,0.2,her 1 psi dusus (tum lastiklerin ortalamasi),fueleconomy.gov maintain (NHTSA 2006),-,evet,ilk_liste
+yag_sinifi,A,tum,1,2,onerilenden farkli viskozite,fueleconomy.gov maintain,-,evet,ilk_liste
+hava_filtresi,A,petrol,0,0,enjeksiyonlu modern motor (etki yok),fueleconomy.gov maintain (ORNL),-,evet,ilk_liste
+yuk_kutle,A,tum,1,1,her ek 45 kg (100 lb); 1450 kg arac,fueleconomy.gov driveHabits (Ricardo 2008),-,evet,ilk_liste
